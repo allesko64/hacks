@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { api } from '../lib/api'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { api, API_BASE } from '../lib/api'
 import { ConnectWalletCard } from '../components/ConnectWalletCard'
 import type { WalletSession } from '../hooks/useWalletSession'
 import type { AccessNotes, AccessRequestRecord } from '../types/records'
@@ -24,6 +24,8 @@ const conditionPreview = (request: AccessRequestRecord) =>
 const getNotesObject = (notes: AccessRequestRecord['notes']): AccessNotes | null =>
   notes && typeof notes === 'object' ? (notes as AccessNotes) : null
 
+type BannerState = { variant: 'info' | 'success' | 'error'; text: string } | null
+
 export function VerifierDashboard({ auth }: VerifierDashboardProps) {
   const [requests, setRequests] = useState<AccessRequestRecord[]>([])
   const [loading, setLoading] = useState(false)
@@ -31,10 +33,23 @@ export function VerifierDashboard({ auth }: VerifierDashboardProps) {
   const [challengeNotes, setChallengeNotes] = useState<ChallengeMap>({})
   const [evaluationNotes, setEvaluationNotes] = useState<ReasonMap>({})
   const [processingId, setProcessingId] = useState<number | null>(null)
+  const [statusBanner, setStatusBanner] = useState<BannerState>(null)
 
-  const verifierWallet = auth.account
+  const verifierWallet = auth.account ? auth.account.toLowerCase() : null
 
-  const refreshRequests = async () => {
+  const upsertRequest = useCallback((next: AccessRequestRecord) => {
+    setRequests((prev) => {
+      const index = prev.findIndex((item) => item.id === next.id)
+      if (index === -1) {
+        return [next, ...prev]
+      }
+      const updated = [...prev]
+      updated[index] = next
+      return updated
+    })
+  }, [])
+
+  const refreshRequests = useCallback(async () => {
     if (!verifierWallet) return
     setLoading(true)
     setError(null)
@@ -46,12 +61,94 @@ export function VerifierDashboard({ auth }: VerifierDashboardProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [verifierWallet])
 
   useEffect(() => {
     if (!verifierWallet) return
     refreshRequests()
-  }, [verifierWallet])
+    const intervalId = window.setInterval(() => {
+      void refreshRequests()
+    }, 15000)
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [verifierWallet, refreshRequests])
+
+  useEffect(() => {
+    if (!verifierWallet) return
+    const source = new EventSource(`${API_BASE}/events`)
+
+    const handleAccessEvent: EventListener = (event) => {
+      const message = event as MessageEvent<string>
+      if (!message.data) return
+      try {
+        const parsed = JSON.parse(message.data) as { payload?: AccessRequestRecord; message?: any }
+        const record = parsed?.payload
+        const normalized = record?.verifierWallet ? record.verifierWallet.toLowerCase() : null
+        if (!record || normalized !== verifierWallet) return
+        upsertRequest({ ...record, verifierWallet: normalized })
+        if (parsed?.message) {
+          setStatusBanner({ variant: 'info', text: parsed.message })
+        }
+      } catch {
+        // ignore malformed payloads
+      }
+    }
+
+    const handleReset: EventListener = () => {
+      setRequests([])
+      void refreshRequests()
+    }
+
+    const handleSeeded: EventListener = (event) => {
+      const message = event as MessageEvent<string>
+      if (!message.data) {
+        void refreshRequests()
+        return
+      }
+      try {
+        const parsed = JSON.parse(message.data) as {
+          payload?: { wallet?: string; accessRequest?: AccessRequestRecord }
+        }
+        if (parsed?.payload?.wallet && parsed.payload.wallet.toLowerCase() !== verifierWallet) {
+          return
+        }
+        if (parsed?.payload?.accessRequest) {
+          const seeded = parsed.payload.accessRequest
+          upsertRequest({
+            ...seeded,
+            verifierWallet: seeded.verifierWallet.toLowerCase()
+          })
+          setStatusBanner({
+            variant: 'info',
+            text: 'Demo access request seeded. Ready to evaluate.'
+          })
+        }
+      } catch {
+        // ignore parsing errors
+      }
+      void refreshRequests()
+    }
+
+    const handleError: EventListener = () => {
+      // EventSource retries automatically; suppress console noise.
+    }
+
+    source.addEventListener('access_request.created', handleAccessEvent)
+    source.addEventListener('access_request.updated', handleAccessEvent)
+    source.addEventListener('system.reset', handleReset)
+    source.addEventListener('system.seeded', handleSeeded)
+    source.addEventListener('error', handleError)
+
+    return () => {
+      source.removeEventListener('access_request.created', handleAccessEvent)
+      source.removeEventListener('access_request.updated', handleAccessEvent)
+      source.removeEventListener('system.reset', handleReset)
+      source.removeEventListener('system.seeded', handleSeeded)
+      source.removeEventListener('error', handleError)
+      source.close()
+    }
+  }, [verifierWallet, upsertRequest, refreshRequests])
 
   const requestedLocks = useMemo(
     () => requests.filter((request) => request.status === 'requested'),
@@ -128,6 +225,12 @@ export function VerifierDashboard({ auth }: VerifierDashboardProps) {
           automatically.
         </p>
       </header>
+
+      {statusBanner && (
+        <div className={`citizen-banner ${statusBanner.variant}`}>
+          {statusBanner.text}
+        </div>
+      )}
 
       {error && <div className="citizen-banner error">{error}</div>}
 

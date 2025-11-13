@@ -2,7 +2,7 @@ import type { CitizenProfile } from '../types/citizen'
 import type { AccessRequestRecord, CredentialRecord, DocumentRecord } from '../types/records'
 import type { AccessCondition } from '../config/accessPolicies'
 
-const API_BASE =
+export const API_BASE =
   (import.meta.env?.VITE_API_URL as string | undefined) ?? 'http://localhost:3000'
 
 type RequestOptions = RequestInit & {
@@ -27,6 +27,11 @@ interface DocumentEnvelope {
 interface AccessRequestEnvelope {
   ok: boolean
   request: AccessRequestRecord
+}
+
+interface SeedResponse {
+  ok: boolean
+  wallet: string
 }
 
 async function request<T = any>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -142,6 +147,17 @@ export const api = {
     return request<AccessRequestEnvelope>(`/access/${id}/evaluate`, {
       method: 'POST',
       body: JSON.stringify(payload)
+    })
+  },
+  resetCitizenData() {
+    return request('/admin/reset', {
+      method: 'POST'
+    })
+  },
+  seedDemoData(payload?: { walletAddress?: string }) {
+    return request<SeedResponse>('/admin/seed', {
+      method: 'POST',
+      body: JSON.stringify(payload ?? {})
     })
   }
 }

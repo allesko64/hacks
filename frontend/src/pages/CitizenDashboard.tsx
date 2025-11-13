@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { api } from '../lib/api'
+import { api, API_BASE } from '../lib/api'
 import { ACCESS_POLICIES, type AccessPolicy } from '../config/accessPolicies'
 import type { CitizenProfile } from '../types/citizen'
 import type { WalletSession } from '../hooks/useWalletSession'
@@ -112,27 +112,123 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
   })
   const [profileSaving, setProfileSaving] = useState(false)
 
-  useEffect(() => {
-    if (!account) return
-    const wallet = account
+  const wallet = account ? account.toLowerCase() : null
 
-    async function bootstrap() {
+  const upsertAccessRequest = useCallback((next: AccessRequestRecord) => {
+    setAccessRequests((prev) => {
+      const index = prev.findIndex((item) => item.id === next.id)
+      if (index === -1) {
+        return [next, ...prev]
+      }
+      const updated = [...prev]
+      updated[index] = next
+      return updated
+    })
+  }, [])
+
+  const bootstrap = useCallback(async () => {
+    if (!wallet) return
+    try {
+      const [docsRes, credsRes, accessRes] = await Promise.all([
+        api.listDocuments(wallet),
+        api.listCredentials(wallet),
+        api.listAccessRequests({ citizenWallet: wallet })
+      ])
+      setDocuments(docsRes.items ?? [])
+      setCredentials(credsRes.items ?? [])
+      setAccessRequests(accessRes.items ?? [])
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message })
+    }
+  }, [wallet])
+
+  useEffect(() => {
+    if (!wallet) return
+    void bootstrap()
+
+    const intervalId = window.setInterval(() => {
+      void bootstrap()
+    }, 15000)
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [wallet, bootstrap])
+
+  useEffect(() => {
+    if (!wallet) return
+    const source = new EventSource(`${API_BASE}/events`)
+
+    const handleAccessEvent: EventListener = (event) => {
+      const message = event as MessageEvent<string>
+      if (!message.data) return
       try {
-        const [docsRes, credsRes, accessRes] = await Promise.all([
-          api.listDocuments(wallet),
-          api.listCredentials(wallet),
-          api.listAccessRequests({ citizenWallet: wallet })
-        ])
-        setDocuments(docsRes.items ?? [])
-        setCredentials(credsRes.items ?? [])
-        setAccessRequests(accessRes.items ?? [])
-      } catch (err: any) {
-        setMessage({ type: 'error', text: err.message })
+        const parsed = JSON.parse(message.data) as { payload?: AccessRequestRecord }
+        const record = parsed?.payload
+        if (!record || (record.citizenWallet ?? '').toLowerCase() !== wallet) return
+        const normalizedRecord = {
+          ...record,
+          citizenWallet: record.citizenWallet.toLowerCase()
+        }
+        upsertAccessRequest(normalizedRecord)
+      } catch {
+        // ignore malformed payloads
       }
     }
 
-    bootstrap()
-  }, [account])
+    const handleReset: EventListener = () => {
+      setDocuments([])
+      setCredentials([])
+      setAccessRequests([])
+      void bootstrap()
+    }
+
+    const handleSeeded: EventListener = (event) => {
+      const message = event as MessageEvent<string>
+      if (!message.data) {
+        void bootstrap()
+        return
+      }
+      try {
+        const parsed = JSON.parse(message.data) as {
+          payload?: { wallet?: string; accessRequest?: AccessRequestRecord }
+        }
+        if (parsed?.payload?.wallet && parsed.payload.wallet.toLowerCase() !== wallet) {
+          return
+        }
+        const seededRequest = parsed?.payload?.accessRequest
+        if (seededRequest) {
+          upsertAccessRequest({
+            ...seededRequest,
+            citizenWallet: seededRequest.citizenWallet.toLowerCase(),
+            verifierWallet: seededRequest.verifierWallet.toLowerCase()
+          })
+        }
+      } catch {
+        // ignore parsing errors, still refresh
+      }
+      void bootstrap()
+    }
+
+    const handleError: EventListener = () => {
+      // EventSource will automatically attempt to reconnect; no-op handler avoids console noise.
+    }
+
+    source.addEventListener('access_request.created', handleAccessEvent)
+    source.addEventListener('access_request.updated', handleAccessEvent)
+    source.addEventListener('system.reset', handleReset)
+    source.addEventListener('system.seeded', handleSeeded)
+    source.addEventListener('error', handleError)
+
+    return () => {
+      source.removeEventListener('access_request.created', handleAccessEvent)
+      source.removeEventListener('access_request.updated', handleAccessEvent)
+      source.removeEventListener('system.reset', handleReset)
+      source.removeEventListener('system.seeded', handleSeeded)
+      source.removeEventListener('error', handleError)
+      source.close()
+    }
+  }, [wallet, upsertAccessRequest, bootstrap])
 
   const pendingDocuments = useMemo(
     () =>
