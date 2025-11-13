@@ -1,0 +1,43 @@
+{
+  "name": "hacks",
+  "version": "1.0.0",
+  "description": "**Web3 Self-Sovereign Identity (SSI) with DIDs, VCs, IPFS & Selective Disclosure**",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beep-boopp/hacks.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/beep-boopp/hacks/issues"
+  },
+  "homepage": "https://github.com/beep-boopp/hacks#readme",
+  "dependencies": {
+    "@types/express": "^5.0.5",
+    "@veramo/core": "^6.0.0",
+    "@veramo/credential-w3c": "^6.0.0",
+    "@veramo/data-store": "^6.0.0",
+    "@veramo/did-manager": "^6.0.0",
+    "@veramo/did-provider-ethr": "^6.0.0",
+    "@veramo/did-resolver": "^6.0.0",
+    "@veramo/key-manager": "^6.0.0",
+    "@veramo/kms-local": "^6.0.0",
+    "@veramo/selective-disclosure": "^6.0.0",
+    "ethr-did-resolver": "^11.0.5",
+    "express": "^5.1.0",
+    "reflect-metadata": "^0.2.2",
+    "sqlite3": "^5.1.7",
+    "typeorm": "^0.3.27"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
