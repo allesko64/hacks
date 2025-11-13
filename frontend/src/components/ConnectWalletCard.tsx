@@ -1,10 +1,14 @@
 import { useEffect, useMemo } from 'react'
-import { useMetamaskAuth } from '../hooks/useMetamaskAuth'
+import type { UseMetamaskAuth } from '../hooks/useMetamaskAuth'
 
 const truncateAddress = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)}`
 
-export function ConnectWalletCard() {
-  const { account, token, loading, error, connect, disconnect, resetError } = useMetamaskAuth()
+interface ConnectWalletCardProps {
+  auth: UseMetamaskAuth
+}
+
+export function ConnectWalletCard({ auth }: ConnectWalletCardProps) {
+  const { account, token, loading, error, connect, disconnect, resetError } = auth
 
   useEffect(() => {
     if (!error) return

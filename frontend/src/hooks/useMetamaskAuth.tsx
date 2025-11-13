@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { BrowserProvider } from 'ethers'
-import type { CitizenProfile } from '../types/citizen'
 
 type Nullable<T> = T | null
 
@@ -10,26 +10,28 @@ interface AuthState {
   token: Nullable<string>
   loading: boolean
   error: Nullable<string>
-  profile: Nullable<CitizenProfile>
 }
 
-export interface UseMetamaskAuth {
+interface UseMetamaskAuth {
   account: Nullable<string>
   did: Nullable<string>
   token: Nullable<string>
   loading: boolean
   error: Nullable<string>
-  profile: Nullable<CitizenProfile>
   connect: () => Promise<void>
   disconnect: () => void
   resetError: () => void
-  refreshProfile: () => Promise<void>
+  refreshCitizen: () => Promise<void>
 }
-
-import { api } from '../lib/api'
 
 const API_BASE = (import.meta.env?.VITE_API_URL as string) ?? 'http://localhost:3000'
 const MESSAGE_PREFIX = 'PixelGenesis login nonce: '
+
+type MetamaskAuthProviderProps = {
+  children: ReactNode
+}
+
+const MetamaskAuthContext = createContext<UseMetamaskAuth | undefined>(undefined)
 
 declare global {
   interface Window {
@@ -71,14 +73,13 @@ async function verifySignature(address: string, signature: string) {
   return data.token as Nullable<string>
 }
 
-export function useMetamaskAuth(): UseMetamaskAuth {
+function useMetamaskAuthInternal(): UseMetamaskAuth {
   const [state, setState] = useState<AuthState>({
     account: null,
     did: null,
     token: null,
     loading: false,
-    error: null,
-    profile: null
+    error: null
   })
 
   const mountedRef = useRef(true)
@@ -93,34 +94,29 @@ export function useMetamaskAuth(): UseMetamaskAuth {
       did: null,
       token: null,
       loading: false,
-      error: null,
-      profile: null
+      error: null
     })
   }, [])
 
-  const loadProfile = useCallback(
-    async (address: string) => {
+  const refreshCitizen = useCallback(
+    async (walletAddress?: string) => {
+      const target = walletAddress ?? state.account
+      if (!target) return
       try {
-        const citizen = await api.getCitizen(address)
-        if (!mountedRef.current) return
-
-        const profile = citizen?.citizen as CitizenProfile | undefined
-
-        setState((prev) => ({
-          ...prev,
-          did: profile?.did ?? `did:ethr:${address}`,
-          profile: profile ?? null
-        }))
+        const response = await fetch(`${API_BASE}/citizens/${target}`)
+        if (!response.ok) return
+        const data = await response.json()
+        if (data?.citizen) {
+          setState((prev) => ({
+            ...prev,
+            did: data.citizen.did ?? `did:ethr:${target}`
+          }))
+        }
       } catch {
-        if (!mountedRef.current) return
-        setState((prev) => ({
-          ...prev,
-          did: `did:ethr:${address}`,
-          profile: null
-        }))
+        // ignore
       }
     },
-    []
+    [state.account]
   )
 
   const connect = useCallback(async () => {
@@ -157,14 +153,13 @@ export function useMetamaskAuth(): UseMetamaskAuth {
 
       setState({
         account: address,
-        did: null,
+        did: `did:ethr:${address}`,
         token,
         loading: false,
-        error: null,
-        profile: null
+        error: null
       })
 
-      await loadProfile(address)
+      await refreshCitizen(address).catch(() => undefined)
     } catch (err: any) {
       if (!mountedRef.current) return
       setState({
@@ -172,11 +167,10 @@ export function useMetamaskAuth(): UseMetamaskAuth {
         did: null,
         token: null,
         loading: false,
-        error: err?.message ?? 'Unknown MetaMask error',
-        profile: null
+        error: err?.message ?? 'Unknown MetaMask error'
       })
     }
-  }, [loadProfile])
+  }, [refreshCitizen])
 
   // Auto-disconnect when user switches accounts or chains
   useEffect(() => {
@@ -187,16 +181,7 @@ export function useMetamaskAuth(): UseMetamaskAuth {
       if (!accounts.length) {
         disconnect()
       } else {
-        const nextAccount = accounts[0]
-        setState((prev) => ({
-          ...prev,
-          account: nextAccount,
-          profile: prev.account === nextAccount ? prev.profile : null,
-          did: prev.account === nextAccount ? prev.did : null
-        }))
-        if (nextAccount) {
-          loadProfile(nextAccount).catch(() => undefined)
-        }
+        setState((prev) => ({ ...prev, account: accounts[0] }))
       }
     }
 
@@ -221,21 +206,28 @@ export function useMetamaskAuth(): UseMetamaskAuth {
   }, [disconnect])
 
 
-  const refreshProfile = useCallback(async () => {
-    if (!state.account) return
-    await loadProfile(state.account)
-  }, [loadProfile, state.account])
-
   return {
     account: state.account,
     did: state.did,
     token: state.token,
     loading: state.loading,
     error: state.error,
-    profile: state.profile,
     connect,
     disconnect,
     resetError,
-    refreshProfile
+    refreshCitizen
   }
+}
+
+export function MetamaskAuthProvider({ children }: MetamaskAuthProviderProps) {
+  const value = useMetamaskAuthInternal()
+  return <MetamaskAuthContext.Provider value={value}>{children}</MetamaskAuthContext.Provider>
+}
+
+export function useMetamaskAuth(): UseMetamaskAuth {
+  const context = useContext(MetamaskAuthContext)
+  if (!context) {
+    throw new Error('useMetamaskAuth must be used within MetamaskAuthProvider')
+  }
+  return context
 }

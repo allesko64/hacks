@@ -1,5 +1,8 @@
 .app-shell {
-  width: min(420px, 100%);
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 2vw, 2.5rem) clamp(2rem, 4vw, 3.5rem);
 }
 
 .wallet-card {
@@ -171,6 +174,302 @@
   border-color: rgba(148, 163, 184, 0.6);
 }
 
+.citizen-dashboard {
+  display: grid;
+  gap: 1.8rem;
+  color: #e2e8f0;
+}
+
+.citizen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.citizen-header h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  letter-spacing: -0.02em;
+}
+
+.citizen-subtitle {
+  margin: 0.35rem 0 0;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.citizen-id-panel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.4rem;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.55);
+  min-width: 280px;
+}
+
+.citizen-id-panel span {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+.citizen-id-panel code {
+  display: block;
+  word-break: break-all;
+}
+
+.citizen-banner {
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.citizen-banner.error {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fecaca;
+}
+
+.citizen-banner.success {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #bbf7d0;
+}
+
+.citizen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.8rem;
+  align-items: start;
+}
+
+.citizen-column {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.citizen-card {
+  background: rgba(15, 23, 42, 0.82);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 1.9rem;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.38);
+  display: grid;
+  gap: 1.2rem;
+}
+
+.citizen-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.citizen-card__hint {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.7);
+  line-height: 1.5;
+}
+
+.citizen-card__details summary {
+  cursor: pointer;
+  color: rgba(148, 197, 255, 0.9);
+}
+
+.citizen-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.citizen-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.citizen-form input,
+.citizen-form select,
+.citizen-form textarea {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(15, 23, 42, 0.55);
+  color: inherit;
+  padding: 0.65rem 0.9rem;
+  font-family: inherit;
+}
+
+.citizen-form textarea {
+  resize: vertical;
+}
+
+.claim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.9rem;
+}
+
+.claim-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(15, 23, 42, 0.55);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.claim-item.selected {
+  border-color: rgba(34, 211, 238, 0.6);
+  background: rgba(56, 189, 248, 0.16);
+}
+
+.claim-item input {
+  width: 18px;
+  height: 18px;
+}
+
+.document-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.document-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.document-list strong {
+  display: block;
+  text-transform: capitalize;
+}
+
+.status {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.status-uploaded,
+.status-under_review {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.status-verified {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.status-rejected {
+  background: rgba(248, 113, 113, 0.15);
+  color: #fca5a5;
+}
+
+.timestamp {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(30, 64, 175, 0.3);
+  color: #bfdbfe;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.credential-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.credential-metadata {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.credential-metadata span {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.6);
+  letter-spacing: 0.08em;
+}
+
+.credential-card textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.6);
+  color: #f8fafc;
+  padding: 0.9rem 1rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+}
+
+.citizen-code {
+  margin: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.9rem 1rem;
+  font-size: 0.8rem;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.citizen-flow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.citizen-flow-card {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.citizen-metric {
+  display: grid;
+  gap: 0.25rem;
+  align-items: baseline;
+}
+
+.citizen-metric span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(226, 232, 240, 0.6);
+}
+
 @media (max-width: 600px) {
   .wallet-card {
     padding: 2rem;
@@ -183,6 +482,15 @@
   }
 
   .btn-secondary {
+    width: 100%;
+  }
+
+  .citizen-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .citizen-id-panel {
     width: 100%;
   }
 }
