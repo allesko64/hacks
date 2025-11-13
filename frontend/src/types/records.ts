@@ -27,3 +27,42 @@ export interface CredentialRecord {
   vcJwt: string
 }
 
+export interface AccessNotes {
+  policy?: {
+    id?: string
+    label?: string
+    description?: string
+  }
+  initialMessage?: string
+  challenge?: {
+    message: string | null
+    issuedAt: number
+  }
+  response?: {
+    submittedAt: number
+  }
+  evaluation?: {
+    status: string
+    reason: string
+    evaluatedAt: number
+    claimValue?: unknown
+    claimValues?: Record<string, unknown>
+    condition?: string
+  }
+  timeline?: Array<{ state: string; at: number }>
+}
+
+export interface AccessRequestRecord {
+  id: number
+  citizenWallet: string
+  verifierWallet: string
+  claim: string
+  condition: Record<string, unknown> | null
+  status: string
+  notes: AccessNotes | string | null
+  responsePayload: Record<string, unknown> | null
+  createdAt: number | null
+  updatedAt: number | null
+  respondedAt: number | null
+}
+

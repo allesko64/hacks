@@ -1,37 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { CitizenProfile } from '../types/citizen'
+import { api } from '../lib/api'
 import { BrowserProvider } from 'ethers'
 
 type Nullable<T> = T | null
 
-interface AuthState {
-  account: Nullable<string>
-  did: Nullable<string>
-  token: Nullable<string>
-  loading: boolean
-  error: Nullable<string>
-}
-
-interface UseMetamaskAuth {
-  account: Nullable<string>
-  did: Nullable<string>
-  token: Nullable<string>
-  loading: boolean
-  error: Nullable<string>
-  connect: () => Promise<void>
-  disconnect: () => void
-  resetError: () => void
-  refreshCitizen: () => Promise<void>
-}
-
 const API_BASE = (import.meta.env?.VITE_API_URL as string) ?? 'http://localhost:3000'
 const MESSAGE_PREFIX = 'PixelGenesis login nonce: '
-
-type MetamaskAuthProviderProps = {
-  children: ReactNode
-}
-
-const MetamaskAuthContext = createContext<UseMetamaskAuth | undefined>(undefined)
 
 declare global {
   interface Window {
@@ -41,6 +16,28 @@ declare global {
       removeListener: (event: string, handler: (...args: any[]) => void) => void
     }
   }
+}
+
+interface WalletSessionState {
+  account: Nullable<string>
+  did: Nullable<string>
+  token: Nullable<string>
+  loading: boolean
+  error: Nullable<string>
+  profile: Nullable<CitizenProfile>
+}
+
+export interface WalletSession {
+  account: Nullable<string>
+  did: Nullable<string>
+  token: Nullable<string>
+  loading: boolean
+  error: Nullable<string>
+  profile: Nullable<CitizenProfile>
+  connect: () => Promise<void>
+  disconnect: () => void
+  resetError: () => void
+  refreshProfile: () => Promise<void>
 }
 
 async function fetchNonce(address: string) {
@@ -73,15 +70,15 @@ async function verifySignature(address: string, signature: string) {
   return data.token as Nullable<string>
 }
 
-function useMetamaskAuthInternal(): UseMetamaskAuth {
-  const [state, setState] = useState<AuthState>({
+export function useWalletSession(): WalletSession {
+  const [state, setState] = useState<WalletSessionState>({
     account: null,
     did: null,
     token: null,
     loading: false,
-    error: null
+    error: null,
+    profile: null
   })
-
   const mountedRef = useRef(true)
 
   const resetError = useCallback(() => {
@@ -94,29 +91,34 @@ function useMetamaskAuthInternal(): UseMetamaskAuth {
       did: null,
       token: null,
       loading: false,
-      error: null
+      error: null,
+      profile: null
     })
   }, [])
 
-  const refreshCitizen = useCallback(
-    async (walletAddress?: string) => {
-      const target = walletAddress ?? state.account
-      if (!target) return
+  const loadProfile = useCallback(
+    async (address: string) => {
       try {
-        const response = await fetch(`${API_BASE}/citizens/${target}`)
-        if (!response.ok) return
-        const data = await response.json()
-        if (data?.citizen) {
-          setState((prev) => ({
-            ...prev,
-            did: data.citizen.did ?? `did:ethr:${target}`
-          }))
-        }
+        const citizen = await api.getCitizen(address)
+        if (!mountedRef.current) return
+
+        const profile = citizen?.citizen as CitizenProfile | undefined
+
+        setState((prev) => ({
+          ...prev,
+          did: profile?.did ?? `did:ethr:${address}`,
+          profile: profile ?? null
+        }))
       } catch {
-        // ignore
+        if (!mountedRef.current) return
+        setState((prev) => ({
+          ...prev,
+          did: `did:ethr:${address}`,
+          profile: null
+        }))
       }
     },
-    [state.account]
+    []
   )
 
   const connect = useCallback(async () => {
@@ -127,7 +129,6 @@ function useMetamaskAuthInternal(): UseMetamaskAuth {
         throw new Error('MetaMask extension not detected')
       }
 
-      // Ask MetaMask for accounts (triggers popup if locked)
       const accounts: string[] = await window.ethereum.request({
         method: 'eth_requestAccounts'
       })
@@ -140,26 +141,22 @@ function useMetamaskAuthInternal(): UseMetamaskAuth {
       const provider = new BrowserProvider(window.ethereum)
       const signer = await provider.getSigner()
 
-      // 1. Fetch login nonce from backend
       const nonce = await fetchNonce(address)
-
-      // 2. Ask MetaMask to sign human-readable message (EIP-4361 style optional)
       const signature = await signer.signMessage(`${MESSAGE_PREFIX}${nonce}`)
-
-      // 3. Verify signature with backend → expect session token/JWT
       const token = await verifySignature(address, signature)
 
       if (!mountedRef.current) return
 
       setState({
         account: address,
-        did: `did:ethr:${address}`,
+        did: null,
         token,
         loading: false,
-        error: null
+        error: null,
+        profile: null
       })
 
-      await refreshCitizen(address).catch(() => undefined)
+      await loadProfile(address)
     } catch (err: any) {
       if (!mountedRef.current) return
       setState({
@@ -167,12 +164,12 @@ function useMetamaskAuthInternal(): UseMetamaskAuth {
         did: null,
         token: null,
         loading: false,
-        error: err?.message ?? 'Unknown MetaMask error'
+        error: err?.message ?? 'Unknown MetaMask error',
+        profile: null
       })
     }
-  }, [refreshCitizen])
+  }, [loadProfile])
 
-  // Auto-disconnect when user switches accounts or chains
   useEffect(() => {
     mountedRef.current = true
     const ethereum = window.ethereum
@@ -181,12 +178,20 @@ function useMetamaskAuthInternal(): UseMetamaskAuth {
       if (!accounts.length) {
         disconnect()
       } else {
-        setState((prev) => ({ ...prev, account: accounts[0] }))
+        const nextAccount = accounts[0]
+        setState((prev) => ({
+          ...prev,
+          account: nextAccount,
+          profile: prev.account === nextAccount ? prev.profile : null,
+          did: prev.account === nextAccount ? prev.did : null
+        }))
+        if (nextAccount) {
+          loadProfile(nextAccount).catch(() => undefined)
+        }
       }
     }
 
     const handleChainChanged = () => {
-      // Force fresh state so dApp revalidates network/nonce
       disconnect()
     }
 
@@ -203,8 +208,12 @@ function useMetamaskAuthInternal(): UseMetamaskAuth {
         ethereum.removeListener('chainChanged', handleChainChanged)
       }
     }
-  }, [disconnect])
+  }, [disconnect, loadProfile])
 
+  const refreshProfile = useCallback(async () => {
+    if (!state.account) return
+    await loadProfile(state.account)
+  }, [loadProfile, state.account])
 
   return {
     account: state.account,
@@ -212,22 +221,12 @@ function useMetamaskAuthInternal(): UseMetamaskAuth {
     token: state.token,
     loading: state.loading,
     error: state.error,
+    profile: state.profile,
     connect,
     disconnect,
     resetError,
-    refreshCitizen
+    refreshProfile
   }
 }
 
-export function MetamaskAuthProvider({ children }: MetamaskAuthProviderProps) {
-  const value = useMetamaskAuthInternal()
-  return <MetamaskAuthContext.Provider value={value}>{children}</MetamaskAuthContext.Provider>
-}
 
-export function useMetamaskAuth(): UseMetamaskAuth {
-  const context = useContext(MetamaskAuthContext)
-  if (!context) {
-    throw new Error('useMetamaskAuth must be used within MetamaskAuthProvider')
-  }
-  return context
-}

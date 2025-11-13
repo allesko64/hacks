@@ -5,6 +5,109 @@
   padding: 0 clamp(1rem, 2vw, 2.5rem) clamp(2rem, 4vw, 3.5rem);
 }
 
+.role-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.role-header__group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.role-home {
+  background: none;
+  border: none;
+  color: #38bdf8;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  border-radius: 999px;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.role-home:hover {
+  background: rgba(56, 189, 248, 0.12);
+  transform: translateX(-2px);
+}
+
+.role-account {
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.7);
+  word-break: break-all;
+}
+
+.role-landing {
+  display: grid;
+  gap: 2.4rem;
+}
+
+.role-landing__header {
+  text-align: center;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.role-landing__header h1 {
+  margin: 0;
+  font-size: 2.4rem;
+  letter-spacing: -0.015em;
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.75rem;
+}
+
+.portal-card {
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  padding: 1.8rem;
+  display: grid;
+  gap: 1.2rem;
+  box-shadow: 0 24px 45px rgba(15, 23, 42, 0.35);
+}
+
+.portal-card p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.portal-card ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.45rem;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.portal-card button {
+  justify-self: flex-start;
+}
+
+.portal-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.portal-status__connected code {
+  font-size: 0.8rem;
+  color: rgba(148, 197, 255, 0.9);
+}
+
+.portal-status__disconnected {
+  color: rgba(226, 232, 240, 0.55);
+}
+
 .wallet-card {
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(148, 163, 184, 0.24);
@@ -187,10 +290,46 @@
   gap: 1.5rem;
 }
 
+.portal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .citizen-header h1 {
   margin: 0;
   font-size: 2.2rem;
   letter-spacing: -0.02em;
+}
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0f172a;
+  background: linear-gradient(135deg, #38bdf8, #22d3ee);
+  width: fit-content;
+}
+
+.role-chip--citizen {
+  background: linear-gradient(135deg, #38bdf8, #3b82f6);
+  color: #0f172a;
+}
+
+.role-chip--issuer {
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: #0f172a;
+}
+
+.role-chip--verifier {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: #022c22;
 }
 
 .citizen-subtitle {
@@ -333,6 +472,271 @@
   height: 18px;
 }
 
+.profile-form {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.profile-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.profile-form input,
+.profile-form select,
+.profile-form textarea {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(15, 23, 42, 0.55);
+  color: inherit;
+  padding: 0.65rem 0.9rem;
+  font-family: inherit;
+}
+
+.profile-form textarea {
+  resize: vertical;
+}
+
+.profile-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.citizen-access-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.access-policy-card {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.55);
+  padding: 1rem 1.2rem;
+  display: grid;
+  gap: 0.75rem;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.25);
+}
+
+.access-policy-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.access-policy-card p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.access-policy-meta {
+  font-size: 0.75rem;
+  color: rgba(148, 197, 255, 0.85);
+  justify-self: flex-start;
+}
+
+.access-policy-card button {
+  justify-self: flex-start;
+}
+
+.btn-outline {
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(15, 23, 42, 0.4);
+  color: rgba(226, 232, 240, 0.85);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.btn-outline:hover:not(:disabled) {
+  border-color: rgba(56, 189, 248, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-outline.strong {
+  border-color: rgba(34, 197, 94, 0.45);
+  color: #bbf7d0;
+}
+
+.btn-outline.danger {
+  border-color: rgba(248, 113, 113, 0.45);
+  color: #fecaca;
+}
+
+.btn-outline:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.access-history {
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  padding-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.access-history ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.access-history li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.access-history__details {
+  display: grid;
+  justify-items: end;
+  gap: 0.3rem;
+}
+
+.access-history__note {
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+.challenge-list {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.challenge-item {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  background: rgba(15, 23, 42, 0.55);
+  display: grid;
+  gap: 0.9rem;
+}
+
+.challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.challenge-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.verifier-dashboard {
+  display: grid;
+  gap: 2rem;
+}
+
+.verifier-section {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  padding: 1.8rem;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.verifier-section > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.verifier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.verifier-card {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.55);
+  padding: 1rem 1.2rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.verifier-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.verifier-card__header code {
+  font-size: 0.72rem;
+  color: rgba(226, 232, 240, 0.65);
+  word-break: break-all;
+}
+
+.verifier-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.issuer-dashboard {
+  display: grid;
+  gap: 2rem;
+}
+
+.issuer-section {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  padding: 1.8rem;
+}
+
+.issuer-placeholder {
+  display: grid;
+  gap: 0.6rem;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.challenge-header code {
+  display: block;
+  word-break: break-all;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.challenge-select {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.challenge-select select {
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(15, 23, 42, 0.45);
+  color: inherit;
+  padding: 0.55rem 0.8rem;
+}
+
+.challenge-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
 .document-list {
   margin: 0;
   padding: 0;
@@ -381,6 +785,31 @@
 .status-rejected {
   background: rgba(248, 113, 113, 0.15);
   color: #fca5a5;
+}
+
+.status-requested {
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+}
+
+.status-challenge_sent {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fcd34d;
+}
+
+.status-responded {
+  background: rgba(56, 189, 248, 0.18);
+  color: #67e8f9;
+}
+
+.status-granted {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+}
+
+.status-denied {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
 }
 
 .timestamp {
@@ -492,5 +921,18 @@
 
   .citizen-id-panel {
     width: 100%;
+  }
+
+  .profile-actions {
+    justify-content: stretch;
+  }
+
+  .profile-actions .btn-primary {
+    width: 100%;
+  }
+
+  .portal-grid,
+  .verifier-grid {
+    grid-template-columns: 1fr;
   }
 }
