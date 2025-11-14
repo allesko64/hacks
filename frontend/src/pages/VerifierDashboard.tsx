@@ -37,6 +37,15 @@ export function VerifierDashboard({ auth }: VerifierDashboardProps) {
 
   const verifierWallet = auth.account ? auth.account.toLowerCase() : null
 
+  useEffect(() => {
+    if (!statusBanner && requests.length) {
+      setStatusBanner({
+        variant: 'info',
+        text: 'Select a pending access lock to send a challenge.'
+      })
+    }
+  }, [requests, statusBanner])
+
   const upsertRequest = useCallback((next: AccessRequestRecord) => {
     setRequests((prev) => {
       const index = prev.findIndex((item) => item.id === next.id)
@@ -82,7 +91,10 @@ export function VerifierDashboard({ auth }: VerifierDashboardProps) {
       const message = event as MessageEvent<string>
       if (!message.data) return
       try {
-        const parsed = JSON.parse(message.data) as { payload?: AccessRequestRecord; message?: any }
+        const parsed = JSON.parse(message.data) as {
+          payload?: AccessRequestRecord
+          message?: string
+        }
         const record = parsed?.payload
         const normalized = record?.verifierWallet ? record.verifierWallet.toLowerCase() : null
         if (!record || normalized !== verifierWallet) return
@@ -109,9 +121,13 @@ export function VerifierDashboard({ auth }: VerifierDashboardProps) {
       try {
         const parsed = JSON.parse(message.data) as {
           payload?: { wallet?: string; accessRequest?: AccessRequestRecord }
+          message?: string
         }
         if (parsed?.payload?.wallet && parsed.payload.wallet.toLowerCase() !== verifierWallet) {
           return
+        }
+        if (parsed?.message) {
+          setStatusBanner({ variant: 'info', text: parsed.message })
         }
         if (parsed?.payload?.accessRequest) {
           const seeded = parsed.payload.accessRequest

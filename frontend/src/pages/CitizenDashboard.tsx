@@ -39,6 +39,14 @@ const COLLEGE_STATUS_OPTIONS = [
   { value: 'not_enrolled', label: 'Not enrolled' }
 ] as const
 
+const DOCUMENT_LABELS: Record<string, string> = {
+  profile_snapshot: 'Saved Profile Snapshot'
+}
+
+const CREDENTIAL_LABELS: Record<string, string> = {
+  profile_snapshot_vc: 'Saved Profile Credential'
+}
+
 type NationalityOption = (typeof NATIONALITY_OPTIONS)[number]['value']
 type VaccinationOption = (typeof VACCINATION_OPTIONS)[number]['value']
 type CollegeStatusOption = (typeof COLLEGE_STATUS_OPTIONS)[number]['value']
@@ -402,6 +410,7 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
       })
 
       await refreshProfile()
+      await bootstrap()
       setMessage({ type: 'success', text: 'Profile details updated.' })
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message })
@@ -948,11 +957,16 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
                           }
                         >
                           <option value="">Select a credential…</option>
-                          {credentials.map((credential) => (
-                            <option key={credential.id} value={credential.id}>
-                              {credential.type ?? 'VerifiableCredential'} (#{credential.id})
-                            </option>
-                          ))}
+                          {credentials.map((credential) => {
+                            const label = credential.type
+                              ? CREDENTIAL_LABELS[credential.type] ?? credential.type
+                              : 'VerifiableCredential'
+                            return (
+                              <option key={credential.id} value={credential.id}>
+                                {label} (#{credential.id})
+                              </option>
+                            )
+                          })}
                         </select>
                       </label>
 
@@ -981,17 +995,28 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
             </header>
             {pendingDocuments.length ? (
               <ul className="document-list">
-                {pendingDocuments.map((doc) => (
-                  <li key={doc.id}>
-                    <div>
-                      <strong>{doc.type}</strong>
-                      <span className={`status status-${doc.status}`}>{doc.status.replace('_', ' ')}</span>
-                    </div>
-                    <a href={doc.storageUri} target="_blank" rel="noreferrer">
-                      View
-                    </a>
-                  </li>
-                ))}
+                {pendingDocuments.map((doc) => {
+                  const label = DOCUMENT_LABELS[doc.type] ?? doc.type
+                  const summary = (doc.metadata as { summary?: Record<string, unknown> })?.summary
+                  return (
+                    <li key={doc.id}>
+                      <div>
+                        <strong>{label}</strong>
+                        <span className={`status status-${doc.status}`}>{doc.status.replace('_', ' ')}</span>
+                      </div>
+                      {summary && (
+                        <p className="document-summary">
+                          {summary.fullName ? `${summary.fullName} · ` : ''}
+                          {summary.nationality ? `Nationality: ${summary.nationality}` : ''}
+                          {summary.vaccinationStatus ? ` · Vaccination: ${summary.vaccinationStatus}` : ''}
+                        </p>
+                      )}
+                      <a href={doc.storageUri} target="_blank" rel="noreferrer">
+                        View
+                      </a>
+                    </li>
+                  )
+                })}
               </ul>
             ) : (
               <p>No documents pending review.</p>
@@ -1005,21 +1030,32 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
             </header>
             {verifiedDocuments.length ? (
               <ul className="document-list">
-                {verifiedDocuments.map((doc) => (
-                  <li key={doc.id}>
-                    <div>
-                      <strong>{doc.type}</strong>
-                      {doc.reviewedAt && (
-                        <span className="timestamp">
-                          Verified {new Date(doc.reviewedAt).toLocaleDateString()}
-                        </span>
+                {verifiedDocuments.map((doc) => {
+                  const label = DOCUMENT_LABELS[doc.type] ?? doc.type
+                  const summary = (doc.metadata as { summary?: Record<string, unknown> })?.summary
+                  return (
+                    <li key={doc.id}>
+                      <div>
+                        <strong>{label}</strong>
+                        {doc.reviewedAt && (
+                          <span className="timestamp">
+                            Verified {new Date(doc.reviewedAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                      {summary && (
+                        <p className="document-summary">
+                          {summary.fullName ? `${summary.fullName} · ` : ''}
+                          {summary.nationality ? `Nationality: ${summary.nationality}` : ''}
+                          {summary.vaccinationStatus ? ` · Vaccination: ${summary.vaccinationStatus}` : ''}
+                        </p>
                       )}
-                    </div>
-                    <a href={doc.storageUri} target="_blank" rel="noreferrer">
-                      View
-                    </a>
-                  </li>
-                ))}
+                      <a href={doc.storageUri} target="_blank" rel="noreferrer">
+                        View
+                      </a>
+                    </li>
+                  )
+                })}
               </ul>
             ) : (
               <p>You haven’t verified any documents yet.</p>
@@ -1033,11 +1069,15 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
             </header>
             {latestCredential ? (
               <div className="credential-card">
-                <div className="credential-metadata">
-                  <div>
-                    <span>Type</span>
-                    <strong>{latestCredential.type ?? 'VerifiableCredential'}</strong>
-                  </div>
+                  <div className="credential-metadata">
+                    <div>
+                      <span>Type</span>
+                      <strong>
+                        {latestCredential.type
+                          ? CREDENTIAL_LABELS[latestCredential.type] ?? latestCredential.type
+                          : 'VerifiableCredential'}
+                      </strong>
+                    </div>
                   <div>
                     <span>Status</span>
                     <strong>{latestCredential.verificationStatus ?? 'issued'}</strong>
