@@ -36,6 +36,7 @@ import { SelectiveDisclosure } from '@veramo/selective-disclosure'
 
 import { createConnection, ConnectionOptions, Connection } from 'typeorm'
 import * as path from 'path'
+import { ensureAuthTables } from './db/setup'
 
 let _agent: any = null
 let _db: Connection | null = null
@@ -82,6 +83,7 @@ export async function getAgent() {
 
   if (!_db) {
     _db = await createConnection(typeormOptions)
+    await ensureAuthTables(_db)
   }
 
   _agent = createAgent<
@@ -127,4 +129,11 @@ export async function getAgent() {
   })
 
   return _agent
+}
+
+export async function getDbConnection() {
+  if (_db) return _db
+  _db = await createConnection(typeormOptions)
+  await ensureAuthTables(_db)
+  return _db
 }
