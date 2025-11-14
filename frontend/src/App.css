@@ -44,6 +44,7 @@
 .role-landing {
   display: grid;
   gap: 2.4rem;
+  font-size: 1.05rem;
 }
 
 .role-landing__header {
@@ -54,8 +55,17 @@
 
 .role-landing__header h1 {
   margin: 0;
-  font-size: 2.4rem;
-  letter-spacing: -0.015em;
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.role-landing__header p {
+  margin: 0;
+  font-size: clamp(1.15rem, 1.2vw + 0.9rem, 1.6rem);
+  font-weight: 500;
+  color: rgba(226, 232, 240, 0.85);
 }
 
 .portal-grid {
