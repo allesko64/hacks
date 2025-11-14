@@ -136,18 +136,18 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
 
   const bootstrap = useCallback(async () => {
     if (!wallet) return
-    try {
-      const [docsRes, credsRes, accessRes] = await Promise.all([
-        api.listDocuments(wallet),
-        api.listCredentials(wallet),
-        api.listAccessRequests({ citizenWallet: wallet })
-      ])
-      setDocuments(docsRes.items ?? [])
-      setCredentials(credsRes.items ?? [])
-      setAccessRequests(accessRes.items ?? [])
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.message })
-    }
+      try {
+        const [docsRes, credsRes, accessRes] = await Promise.all([
+          api.listDocuments(wallet),
+          api.listCredentials(wallet),
+          api.listAccessRequests({ citizenWallet: wallet })
+        ])
+        setDocuments(docsRes.items ?? [])
+        setCredentials(credsRes.items ?? [])
+        setAccessRequests(accessRes.items ?? [])
+      } catch (err: any) {
+        setMessage({ type: 'error', text: err.message })
+      }
   }, [wallet])
 
   useEffect(() => {
@@ -962,9 +962,9 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
                               ? CREDENTIAL_LABELS[credential.type] ?? credential.type
                               : 'VerifiableCredential'
                             return (
-                              <option key={credential.id} value={credential.id}>
+                            <option key={credential.id} value={credential.id}>
                                 {label} (#{credential.id})
-                              </option>
+                            </option>
                             )
                           })}
                         </select>
@@ -999,11 +999,11 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
                   const label = DOCUMENT_LABELS[doc.type] ?? doc.type
                   const summary = (doc.metadata as { summary?: Record<string, unknown> })?.summary
                   return (
-                    <li key={doc.id}>
-                      <div>
+                  <li key={doc.id}>
+                    <div>
                         <strong>{label}</strong>
-                        <span className={`status status-${doc.status}`}>{doc.status.replace('_', ' ')}</span>
-                      </div>
+                      <span className={`status status-${doc.status}`}>{doc.status.replace('_', ' ')}</span>
+                    </div>
                       {summary && (
                         <p className="document-summary">
                           {summary.fullName ? `${summary.fullName} · ` : ''}
@@ -1011,10 +1011,10 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
                           {summary.vaccinationStatus ? ` · Vaccination: ${summary.vaccinationStatus}` : ''}
                         </p>
                       )}
-                      <a href={doc.storageUri} target="_blank" rel="noreferrer">
-                        View
-                      </a>
-                    </li>
+                    <a href={doc.storageUri} target="_blank" rel="noreferrer">
+                      View
+                    </a>
+                  </li>
                   )
                 })}
               </ul>
@@ -1034,15 +1034,15 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
                   const label = DOCUMENT_LABELS[doc.type] ?? doc.type
                   const summary = (doc.metadata as { summary?: Record<string, unknown> })?.summary
                   return (
-                    <li key={doc.id}>
-                      <div>
+                  <li key={doc.id}>
+                    <div>
                         <strong>{label}</strong>
-                        {doc.reviewedAt && (
-                          <span className="timestamp">
-                            Verified {new Date(doc.reviewedAt).toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
+                      {doc.reviewedAt && (
+                        <span className="timestamp">
+                          Verified {new Date(doc.reviewedAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
                       {summary && (
                         <p className="document-summary">
                           {summary.fullName ? `${summary.fullName} · ` : ''}
@@ -1050,10 +1050,10 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
                           {summary.vaccinationStatus ? ` · Vaccination: ${summary.vaccinationStatus}` : ''}
                         </p>
                       )}
-                      <a href={doc.storageUri} target="_blank" rel="noreferrer">
-                        View
-                      </a>
-                    </li>
+                    <a href={doc.storageUri} target="_blank" rel="noreferrer">
+                      View
+                    </a>
+                  </li>
                   )
                 })}
               </ul>
@@ -1069,15 +1069,15 @@ export function CitizenDashboard({ auth }: CitizenDashboardProps) {
             </header>
             {latestCredential ? (
               <div className="credential-card">
-                  <div className="credential-metadata">
-                    <div>
-                      <span>Type</span>
+                <div className="credential-metadata">
+                  <div>
+                    <span>Type</span>
                       <strong>
                         {latestCredential.type
                           ? CREDENTIAL_LABELS[latestCredential.type] ?? latestCredential.type
                           : 'VerifiableCredential'}
                       </strong>
-                    </div>
+                  </div>
                   <div>
                     <span>Status</span>
                     <strong>{latestCredential.verificationStatus ?? 'issued'}</strong>

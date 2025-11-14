@@ -155,8 +155,11 @@ export const RoleLanding: FC<RoleLandingProps> = ({
   return (
     <div className="role-landing">
       <header className="role-landing__header">
-        <h1>TrueNeed</h1>
-        <p>Your identity, your control.</p>
+        <h1>PixelGenesis Control Center</h1>
+        <p>
+          Choose the workspace you want to operate in. You can switch portals at any time without
+          disconnecting your wallet.
+        </p>
         <div className="role-landing__actions">
           <button className="btn-outline danger" onClick={handleReset} disabled={resetting || seeding}>
             {resetting ? 'Resetting…' : 'Reset demo data'}
