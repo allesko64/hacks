@@ -66,3 +66,15 @@ export interface AccessRequestRecord {
   respondedAt: number | null
 }
 
+export interface CredentialRequestRecord {
+  id: number
+  walletAddress: string
+  requestedClaims: string[]
+  status: string
+  issuerWallet: string | null
+  verifierWallet: string | null
+  notes: Record<string, unknown> | string | null
+  createdAt: number | null
+  updatedAt: number | null
+}
+

@@ -1,5 +1,10 @@
 import type { CitizenProfile } from '../types/citizen'
-import type { AccessRequestRecord, CredentialRecord, DocumentRecord } from '../types/records'
+import type {
+  AccessRequestRecord,
+  CredentialRecord,
+  DocumentRecord,
+  CredentialRequestRecord
+} from '../types/records'
 import type { AccessCondition } from '../config/accessPolicies'
 
 export const API_BASE =
@@ -105,9 +110,14 @@ export const api = {
       body: JSON.stringify(payload)
     })
   },
-  listCredentialRequests(walletAddress: string) {
-    const params = new URLSearchParams({ walletAddress })
-    return request(`/requests?${params.toString()}`)
+  listCredentialRequests(params?: { walletAddress?: string; status?: string }) {
+    const query = new URLSearchParams()
+    if (params?.walletAddress) query.append('walletAddress', params.walletAddress)
+    if (params?.status) query.append('status', params.status)
+    const suffix = query.toString()
+    return request<{ ok: boolean; items: CredentialRequestRecord[] }>(
+      `/requests${suffix ? `?${suffix}` : ''}`
+    )
   },
   requestAccess(payload: {
     citizenWallet: string
@@ -158,6 +168,15 @@ export const api = {
     return request<SeedResponse>('/admin/seed', {
       method: 'POST',
       body: JSON.stringify(payload ?? {})
+    })
+  },
+  updateCredentialRequestStatus(
+    id: number,
+    payload: { status: string; issuerWallet?: string; verifierWallet?: string; notes?: string }
+  ) {
+    return request(`/requests/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
     })
   }
 }
