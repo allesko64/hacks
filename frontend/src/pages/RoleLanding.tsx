@@ -211,15 +211,6 @@ export const RoleLanding: FC<RoleLandingProps> = ({
             </p>
           )}
         </div>
-        <section className="role-landing__guide">
-          <h2>Demo checklist</h2>
-          <ol>
-            <li>Apply a verifier wallet and click <strong>Apply &amp; Seed</strong>.</li>
-            <li>Open <code>?role=citizen</code>, connect MetaMask, request access or credentials.</li>
-            <li>Open <code>?role=verifier</code> to challenge and evaluate in real time.</li>
-            <li>Use <code>?role=issuer</code> to approve or reject pending credential requests.</li>
-          </ol>
-        </section>
       </header>
 
       <div className="portal-grid">

@@ -85,6 +85,19 @@ A **3-role Web3 identity system**:
 
 ---
 
+## Hackathon Demo Setup
+
+1. Export the wallet you plan to demo with:
+   - Frontend: set `VITE_DEMO_VERIFIER_WALLET=<your-wallet-address>` (e.g. in `.env`).
+   - Backend: set `DEMO_WALLET_ADDRESS=<your-wallet-address>`.
+2. Start the backend (`npm run dev` in `backend/`) and the frontend (`npm run dev` in `frontend/`).
+3. Open the landing page (`/?role=landing`) and, if needed, set the “Verifier demo wallet” field to the address you’ll monitor. Use **Apply & Seed** to both configure the portals and preload sample data (profile snapshot, credential, seeded access+credential requests).
+4. Still on the landing page, you can use **Reset demo data** at any time to wipe the SQLite state.
+5. In separate tabs, open `/?role=citizen`, `/?role=verifier`, and `/?role=issuer`. Citizen connects with MetaMask; verifier/issuer auto-connect with the configured wallet.
+6. Walk through a request/challenge/proof flow—live updates are pushed via Server-Sent Events so both dashboards stay in sync. Use the issuer portal to approve or reject credential requests seeded by the citizen.
+
+---
+
 ## Security
 
 - Keys stay in **MetaMask**

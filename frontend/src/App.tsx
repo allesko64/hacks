@@ -52,9 +52,9 @@ function App() {
   const verifierSession = useStaticWalletSession(verifierWalletOverride)
   const sessionMap = useMemo(
     () => ({
-      citizen: citizenSession,
-      issuer: issuerSession,
-      verifier: verifierSession
+    citizen: citizenSession,
+    issuer: issuerSession,
+    verifier: verifierSession
     }),
     [citizenSession, issuerSession, verifierSession]
   )
